@@ -12,9 +12,9 @@ module Lokka
 
         #begin
           io = ::IO.respond_to?(:binread) ? ::IO.binread(file) : ::IO.read(file)
-          code, data = io.gsub("\r\n", "\n").split(/^__END__$/, 2)
+          code, view = io.gsub("\r\n", "\n").split(/^__END__$/, 2)
         #rescue Errno::ENOENT
-        #  app, data = nil
+        #  code, view = nil
         #end
 
         paths = file.split(File::SEPARATOR)
@@ -23,13 +23,29 @@ module Lokka
         if code
           eval(code, TOPLEVEL_BINDING)
           #begin
-            plugin = ::Lokka.const_get(name.camelize)
-            app.register plugin
+          plugin = ::Lokka.const_get(name.camelize)
+          app.register plugin
+          if view
+            lines = code.count("\n") + 1
+            template = nil
+            view.each_line do |line|
+              lines += 1
+              if line =~ /^@@\s*(.*\S)\s*$/
+                template = ''
+                # template name cannot set yet
+                app.templates["inline/#{$1}".to_sym] = [template, file, lines]
+              elsif template
+                template << line
+              end
+            end
+          end
+
+
           #rescue => e
           #  puts "plugin #{file} is identified as a suspect."
           #  puts e
           #end
-          settings.instant_plugins << name
+          settings.instant_plugins << [name, file]
           flash[:notice] = 'Updated.'
         else
           flash[:notice] = 'Error.'

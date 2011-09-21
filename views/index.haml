@@ -1,15 +1,16 @@
 %h2 Instant Plugin
-%h3= `pwd`
 %ul.plugins
-  - settings.instant_plugins.each do |plugin|
+  - settings.instant_plugins.each do |plugin, path|
     %li
       = plugin
+      %br
+      (#{path})
       %form{:action => "/admin/plugins/instant_plugin/#{plugin}"}
         %input{:type => 'hidden', :name => '_method', :value => 'delete'}
-        %input{:type => 'submit', :value => 'remove'}
+        %input{:type => 'submit', :value => 'remove (not implemented)'}
 %form{:action => '/admin/plugins/instant_plugin', :method => 'post'}
   .field
-    %label{:for => 'plugin_path'} Plugin Path
+    %label{:for => 'plugin_path'} Plugin Path (current: #{Dir.pwd})
     %br
     %input{:type => 'text', :id => 'plugin_path', :name => 'plugin_path'}
   .field
@@ -21,5 +22,5 @@
 -#    %input{:type => 'text', :id => 'path', :name => 'path'}
 -#  .field
 -#    %input{:type => 'submit', :value => 'register'}
-%textarea
-  = settings.routes['GET'].map(&:first)
+-#%textarea
+-#  = settings.routes['GET'].map(&:first)
