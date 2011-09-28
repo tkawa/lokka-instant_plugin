@@ -32,8 +32,8 @@ module Lokka
               lines += 1
               if line =~ /^@@\s*(.*\S)\s*$/
                 template = ''
-                # template name cannot set yet
-                app.templates["inline/#{$1}".to_sym] = [template, file, lines]
+                # template name starts with "inline:"
+                app.templates["inline:#{name}/#{$1}".to_sym] = [template, file, lines]
               elsif template
                 template << line
               end
