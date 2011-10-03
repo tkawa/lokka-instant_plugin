@@ -10,11 +10,22 @@
         %input{:type => 'submit', :value => 'remove (not implemented)'}
 %form{:action => '/admin/plugins/instant_plugin', :method => 'post'}
   .field
-    %label{:for => 'plugin_path'} Plugin Path (current: #{Dir.pwd})
+    %label{:for => 'plugin_path'} Plugin Path
+    (current: #{Dir.pwd})
     %br
     %input{:type => 'text', :id => 'plugin_path', :name => 'plugin_path'}
   .field
     %input{:type => 'submit', :value => 'register'}
+
+%form{:action => '/admin/plugins/instant_plugin/themes', :method => 'post'}
+  .field
+    %label{:for => 'theme_url'} Theme Git URL
+    (e.g. git://github.com/tkawa/lokkatheme-p0t.git)
+    %br
+    %input{:type => 'text', :id => 'theme_url', :name => 'theme_url'}
+  .field
+    %input{:type => 'submit', :value => 'register'}
+
 -#%form{:action => '/admin/plugins/instant_plugin/add_route', :method => 'post'}
 -#  .field
 -#    %label{:for => 'path'} Add Pathname
@@ -23,4 +34,5 @@
 -#  .field
 -#    %input{:type => 'submit', :value => 'register'}
 %textarea
-  = settings.routes['GET'].map(&:first)
+  -#= settings.routes['GET'].map(&:first)
+  = settings.templates
