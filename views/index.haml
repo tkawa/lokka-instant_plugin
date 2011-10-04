@@ -17,6 +17,21 @@
   .field
     %input{:type => 'submit', :value => 'register'}
 
+%ul.git_themes
+  - settings.git_themes.each do |theme_name, theme|
+    %li
+      = theme_name
+      %br
+      (#{theme.git})
+      - if theme.screenshot
+        .screenshot
+          %img{:src => theme.screenshot, :width => 240, :height => 170}
+      - else
+        .screenshot
+          %span no screenshot
+      -#%form{:action => "/admin/plugins/instant_plugin/#{plugin}"}
+      -#  %input{:type => 'hidden', :name => '_method', :value => 'delete'}
+      -#  %input{:type => 'submit', :value => 'remove (not implemented)'}
 %form{:action => '/admin/plugins/instant_plugin/themes', :method => 'post'}
   .field
     %label{:for => 'theme_url'} Theme Git URL

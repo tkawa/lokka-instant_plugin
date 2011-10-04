@@ -2,7 +2,7 @@ module Lokka
   module InstantPlugin
     def self.registered(app)
       app.set :instant_plugins, []
-      #app.set :git_themes, {}
+      app.set :git_themes, {}
       app.get '/admin/plugins/instant_plugin' do
         #puts app.instance_variable_get(:@routes)['GET'].map(&:first)
         haml :"plugin/lokka-instant_plugin/views/index", :layout => :"admin/layout"
@@ -67,23 +67,28 @@ module Lokka
         if theme_url =~ /^git:/
           user, theme_git = theme_url.split('/').last(2)
           theme_name = theme_git.split('.').first
-          #reg_exts = {}
           FileUtils.makedirs 'tmp/cache'
           FileUtils.chdir 'tmp/cache' do
             exec_git(theme_url)
             exts = settings.supported_templates.join(',')
-            Dir.glob("#{theme_name}/*.{#{exts}}") do |path|
-              name, ext = path.split('.')
-              view = ::IO.respond_to?(:binread) ? ::IO.binread(path) : ::IO.read(path)
-              lines = view.count("\n") + 1
-              settings.templates["git:#{name}".to_sym] = [view, "git:#{path}", lines]
-              #reg_exts[name] = ext
-            end
+            view_paths =
+              Dir.glob("#{theme_name}/*.{#{exts}}").map do |path|
+                name, ext = path.split('.')
+                view = ::IO.respond_to?(:binread) ? ::IO.binread(path) : ::IO.read(path)
+                lines = view.count("\n") + 1
+                settings.templates["git:#{name}".to_sym] = [view, "git:#{path}", lines]
+                "git:#{path}"
+              end
+            screenshot_path = Dir.glob("#{theme_name}/screenshot.*").first
+            settings.git_themes[theme_name] = OpenStruct.new(
+              :git => theme_url,
+              :assets_root => "http://#{user}.github.com/#{theme_name}",
+              :view_paths => view_paths,
+              :screenshot => screenshot_path ? "http://#{user}.github.com/#{screenshot_path}": nil)
           end
+          FileUtils.rmtree 'tmp/cache', :secure => true
           site = Site.first
           site.update(:theme => theme_name)
-          #settings.git_themes[theme_name] = reg_exts
-          app.set :gh_pages_path, "http://#{user}.github.com/#{theme_name}"
         end
         flash[:notice] = 'Fetched theme & Applied.'
         redirect '/admin/plugins/instant_plugin'
@@ -142,7 +147,7 @@ module Lokka
         send(ext.to_sym, path.to_sym, options, locals)
       elsif t = settings.templates["git:#{@theme.name}/#{name}".to_sym] and
             t[1].end_with?(".#{ext}")
-        @theme.instance_variable_set :@path, settings.gh_pages_path
+        @theme.instance_variable_set :@path, settings.git_themes[@theme.name].assets_root
         send(ext.to_sym, "git:#{@theme.name}/#{name}".to_sym, options, locals)
       end
     end
